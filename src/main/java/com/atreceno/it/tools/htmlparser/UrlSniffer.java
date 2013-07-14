@@ -9,8 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -25,6 +23,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * AthleteParser
@@ -32,14 +32,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
  */
 public class UrlSniffer {
 
-	private static Logger logger = Logger.getLogger(UrlSniffer.class.getName());
+	final Logger logger = LoggerFactory.getLogger(UrlSniffer.class);
 
 	protected Properties getProperties() {
 		Properties p = new Properties();
 		InputStream is = ClassLoader
 				.getSystemResourceAsStream("app.properties");
 		if (is == null) {
-			logger.log(Level.WARNING, "Properties file not found");
+			logger.warn("Properties file not found");
 		}
 		try {
 			p.load(is);
@@ -53,6 +53,7 @@ public class UrlSniffer {
 			throws TransformerFactoryConfigurationError, TransformerException,
 			ClientProtocolException, IOException {
 
+		logger.info("Getting links...");
 		Properties p = getProperties();
 
 		String prefix = p.getProperty("sniffer.links.url.prefix");
@@ -73,7 +74,7 @@ public class UrlSniffer {
 			String to, String regex, String replace, int pageLimit)
 			throws ClientProtocolException, IOException {
 
-		logger.log(Level.INFO, "Setting page limit to " + pageLimit);
+		logger.info("Setting page limit to " + pageLimit);
 		HttpClient httpClient = new DefaultHttpClient();
 		int m = 0, n = 0, page = 1;
 		StringBuffer html = new StringBuffer().append("<div id=\"sniffer\">");
@@ -83,7 +84,7 @@ public class UrlSniffer {
 				break;
 
 			String url = prefix + page + suffix;
-			logger.log(Level.INFO, "Scanning: " + url);
+			logger.info("Scanning: " + url);
 			HttpGet httpget = new HttpGet(url);
 
 			String body = httpClient.execute(httpget,
@@ -92,8 +93,8 @@ public class UrlSniffer {
 			m = body.indexOf(from);
 			n = body.indexOf(to, m);
 			if (m == -1 || n == -1) {
-				logger.log(Level.WARNING, "String " + from + " or " + to
-						+ " not found in: " + url);
+				logger.warn("String " + from + " or " + to + " not found in: "
+						+ url);
 				break;
 			}
 
@@ -103,7 +104,7 @@ public class UrlSniffer {
 				body = body.replaceAll(regex, replace);
 			}
 
-			logger.log(Level.FINE, body);
+			logger.debug(body);
 			html.append(body);
 			page++;
 
@@ -115,7 +116,7 @@ public class UrlSniffer {
 	private void linksTransformer(String html, String xslt, String outputfile)
 			throws TransformerFactoryConfigurationError, TransformerException {
 
-		logger.log(Level.FINE, html);
+		logger.debug(html);
 		StreamResult sr = new StreamResult(new File(outputfile));
 		Transformer t = TransformerFactory.newInstance(
 				"net.sf.saxon.TransformerFactoryImpl", null).newTransformer(
@@ -129,6 +130,7 @@ public class UrlSniffer {
 
 	protected void targetsParser() throws IOException {
 
+		logger.info("Parsing targets...");
 		Properties p = getProperties();
 		String parserin = p.getProperty("sniffer.links.transform.filename");
 		String parserout = p.getProperty("sniffer.targets.truncate.filename");
@@ -143,16 +145,16 @@ public class UrlSniffer {
 		HttpClient hc = new DefaultHttpClient();
 		bw.write("<div id=\"sniffer\">\n");
 		while ((line = br.readLine()) != null) {
-			logger.log(Level.INFO, "Scanning line: " + line);
+			logger.info("Scanning line: " + line);
 			String[] a = line.split("\t");
 			HttpGet hg = new HttpGet(a[2]);
 			String body = hc.execute(hg, new BasicResponseHandler());
-			logger.log(Level.FINE, body);
+			logger.debug(body);
 			int m = body.indexOf(from);
 			int n = body.indexOf(to, m);
 			if (m == -1 || n == -1) {
-				logger.log(Level.WARNING, "String " + from + " or " + to
-						+ " not found in: " + a[2]);
+				logger.warn("String " + from + " or " + to + " not found in: "
+						+ a[2]);
 				break;
 			}
 
@@ -173,6 +175,7 @@ public class UrlSniffer {
 	protected void targetsTransformer()
 			throws TransformerFactoryConfigurationError, TransformerException {
 
+		logger.info("Transforming targets...");
 		Properties p = getProperties();
 		String parserout = p.getProperty("sniffer.targets.truncate.filename");
 		String xslt = p.getProperty("sniffer.targets.transform.xslt");
@@ -208,7 +211,6 @@ public class UrlSniffer {
 		}
 
 		if (args[0].equals("links")) {
-			logger.log(Level.INFO, "Getting links...");
 			try {
 				int pageLimit = 0;
 				if (args.length == 2) {
@@ -227,14 +229,12 @@ public class UrlSniffer {
 				e.printStackTrace();
 			}
 		} else if (args[0].equals("parse")) {
-			logger.log(Level.INFO, "Parsing targets...");
 			try {
 				sniffer.targetsParser();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		} else if (args[0].equals("transform")) {
-			logger.log(Level.INFO, "Transforming targets...");
 			try {
 				sniffer.targetsTransformer();
 			} catch (TransformerFactoryConfigurationError e) {
@@ -245,7 +245,6 @@ public class UrlSniffer {
 		} else {
 			sniffer.printUsageAndExit();
 		}
-		logger.info("Done!");
 
 	}
 }
