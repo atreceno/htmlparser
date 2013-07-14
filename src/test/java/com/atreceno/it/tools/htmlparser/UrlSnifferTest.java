@@ -1,5 +1,7 @@
 package com.atreceno.it.tools.htmlparser;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
@@ -7,36 +9,22 @@ import java.util.Properties;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.http.client.ClientProtocolException;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 /**
  * Unit test for UrlSniffer.
  */
-public class UrlSnifferTest extends TestCase {
-	/**
-	 * Create the test case
-	 * 
-	 * @param testName
-	 *            name of the test case
-	 */
-	public UrlSnifferTest(String testName) {
-		super(testName);
-	}
+@RunWith(JUnit4.class)
+public class UrlSnifferTest {
 
 	/**
-	 * @return the suite of tests being tested
+	 * Rigorous Test :-)
 	 */
-	public static Test suite() {
-		return new TestSuite(UrlSnifferTest.class);
-	}
-
-	/**
-	 * Rigourous Test :-)
-	 */
+	@Test
 	public void testApp() {
 		assertTrue(true);
 	}
@@ -45,6 +33,8 @@ public class UrlSnifferTest extends TestCase {
 	 * It should create the filename specified in properties file:
 	 * sniffer.links.transform.filename
 	 */
+	@Test
+	@Ignore
 	public void testLinks() {
 		UrlSniffer s = new UrlSniffer();
 		Properties p = s.getProperties();
@@ -67,6 +57,8 @@ public class UrlSnifferTest extends TestCase {
 	 * It should create the filename specified in properties file:
 	 * sniffer.targets.truncate.filename
 	 */
+	@Test
+	@Ignore
 	public void testParser() {
 		UrlSniffer s = new UrlSniffer();
 		Properties p = s.getProperties();
@@ -83,6 +75,8 @@ public class UrlSnifferTest extends TestCase {
 	 * It should create the filename specified in properties file:
 	 * sniffer.targets.truncate.filename
 	 */
+	@Test
+	@Ignore
 	public void testTransformer() {
 		UrlSniffer s = new UrlSniffer();
 		Properties p = s.getProperties();
